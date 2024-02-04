@@ -1,3 +1,30 @@
+// import React, { useState } from "react";
+// import { Link } from "react-router-dom";
+// import { useDispatch } from "react-redux";
+// import { useForm } from "react-hook-form";
+// import { TbSocial } from "react-icons/tb";
+// import { BsShare } from "react-icons/bs";
+// import { AiOutlineInteraction } from "react-icons/ai";
+// import { ImConnection } from "react-icons/im";
+// import { CustomButton, Loading, TextInput } from "../components";
+// import { BgImage } from "../assets";
+
+// const Login = () => {
+//   const {
+//     register,
+//     handleSubmit,
+//     formState: { errors },
+//   } = useForm({
+//     mode: "onChange",
+//   });
+
+//   const onSubmit = async (data) => {
+
+//   };
+
+//   const [errMsg, setErrMsg] = useState("");
+//   const [isSubmitting, setIsSubmitting] = useState(false);
+//   const dispatch = useDispatch();
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { useDispatch } from "react-redux";
@@ -8,6 +35,9 @@ import { AiOutlineInteraction } from "react-icons/ai";
 import { ImConnection } from "react-icons/im";
 import { CustomButton, Loading, TextInput } from "../components";
 import { BgImage } from "../assets";
+import { UserLogin } from "../redux/userSlice"; // Import your Redux actions
+import { useHistory } from "react-router-dom";
+
 
 const Login = () => {
   const {
@@ -18,12 +48,82 @@ const Login = () => {
     mode: "onChange",
   });
 
-  const onSubmit = async (data) => {};
-
   const [errMsg, setErrMsg] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const dispatch = useDispatch();
-  return (
+
+
+  const onLoginSubmit = async (data) => {
+    try {
+      setIsSubmitting(true);
+
+      const response = await fetch("http://localhost:3001/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        dispatch(UserLogin(result.user));
+       
+      } else {
+        setErrMsg({
+          status: "failed",
+          message: result.error || "Login failed. Please check your credentials.",
+        });
+      }
+    } catch (error) {
+      console.error("Error during login:", error);
+      setErrMsg({
+        status: "failed",
+        message: "An error occurred during login. Please try again.",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const onRegisterSubmit = async (data) => {
+    try {
+      setIsSubmitting(true);
+
+      const response = await fetch("http://localhost:3001/api/auth/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        // Dispatch the user login action after registration
+        dispatch(UserLogin(result.user));
+
+      } else {
+        setErrMsg({
+          status: "failed",
+          message: result.error || "Registration failed. Please try again.",
+        });
+      }
+    } catch (error) {
+      console.error("Error during registration:", error);
+      setErrMsg({
+        status: "failed",
+        message: "An error occurred during registration. Please try again.",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+ 
+
+return (
     <div className='bg-bgColor w-full h-[100vh] flex items-center justify-center p-6'>
       <div className='w-full md:w-2/3 h-fit lg:h-full 2xl:h-5/6 py-8 lg:py-0 flex bg-primary rounded-xl overflow-hidden shadow-xl'>
         {/* LEFT */}
@@ -33,7 +133,7 @@ const Login = () => {
             <TbSocial />
             </div>
             <span className='text-2xl text-[#065ad8] font-semibold'>
-              GUNNY
+              Colab
             </span>
           </div>
 
@@ -44,7 +144,7 @@ const Login = () => {
 
           <form
             className='py-8 flex flex-col gap-5='
-            onSubmit={handleSubmit(onSubmit)}
+            onSubmit={handleSubmit(onLoginSubmit)}
           >
             <TextInput
               name='email'
